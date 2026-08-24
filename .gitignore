@@ -12,3 +12,6 @@ desktop.ini
 
 # Logs & Temp
 *.log
+
+# Floder
+google-apps-script/

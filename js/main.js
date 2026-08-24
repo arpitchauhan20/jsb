@@ -154,11 +154,11 @@ if (form) {
           setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
           form.reset();
         } else {
-          setStatus(resData.message || "Something went wrong. Please call +1 587-700-0085 or try again.", "err");
+          setStatus(resData.message || "Something went wrong. Please call +1 403-909-4626 or try again.", "err");
         }
       }
     } catch (err) {
-      setStatus("Network error. Please call +1 587-700-0085 or try again.", "err");
+      setStatus("Network error. Please call +1 403-909-4626 or try again.", "err");
     } finally {
       if (btn) btn.disabled = false;
     }
