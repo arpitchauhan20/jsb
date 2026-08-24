@@ -3,7 +3,11 @@ const mobileNav = document.querySelector(".mobile-nav");
 if (menuBtn && mobileNav) {
   const setOpen = (open) => {
     mobileNav.classList.toggle("open", open);
+    menuBtn.classList.toggle("open", open);
+    menuBtn.classList.toggle("active", open);
     menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    menuBtn.innerHTML = open ? "&times;" : "&#9776;";
     document.body.classList.toggle("nav-open", open);
   };
   menuBtn.addEventListener("click", () => {
