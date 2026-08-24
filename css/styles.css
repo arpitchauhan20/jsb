@@ -95,6 +95,15 @@ a {
   max-width: 720px;
   color: var(--muted);
 }
+.legal-copy h2 {
+  color: var(--text);
+  margin-top: 8px;
+}
+.legal-copy a {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+.legal-copy a:hover { color: var(--white); }
 
 .topbar {
   background: #F1EBEE;

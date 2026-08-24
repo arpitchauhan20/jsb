@@ -8,7 +8,9 @@ Official website and Progressive Web App (PWA) for JSB Mobile Truck and Trailer 
 - `about.html` - About Us & credential overview
 - `services.html` - Comprehensive services menu and dispatch options
 - `contact.html` - Contact & 24/7 callback request form
-- `legal.html` - Terms & Privacy policy
+- `terms.html` - Terms and conditions
+- `privacy.html` - Privacy policy
+- `legal.html` - Short links to terms and privacy
 - `manifest.json` - PWA Web App Manifest configuration
 - `sw.js` - Service Worker for offline shell caching and network fallback
 - `css/styles.css` - Custom styling, dark mode theme, and responsive layouts

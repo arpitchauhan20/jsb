@@ -3,7 +3,7 @@
  * Version: 1.0.0
  */
 
-const CACHE_NAME = "jsb-cache-v1";
+const CACHE_NAME = "jsb-cache-v2";
 
 const PRECACHE_ASSETS = [
   "./",
@@ -12,10 +12,11 @@ const PRECACHE_ASSETS = [
   "./services.html",
   "./contact.html",
   "./legal.html",
+  "./terms.html",
+  "./privacy.html",
   "./css/styles.css",
   "./js/main.js",
   "./manifest.json",
-  "./images/jsb-logo.webp",
   "./images/jsb-logo.png",
   "./images/icon-192.png",
   "./images/icon-512.png",
