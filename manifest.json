@@ -2,7 +2,7 @@
   "name": "JSB Mobile Truck and Trailer Repair",
   "short_name": "JSB Repair",
   "description": "24/7 heavy-duty mobile truck, trailer, and diesel repair service across Calgary and southern Alberta.",
-  "start_url": "./index.html",
+  "start_url": "/",
   "scope": "./",
   "display": "standalone",
   "background_color": "#070b12",
@@ -33,14 +33,14 @@
       "name": "Services Menu",
       "short_name": "Services",
       "description": "View full list of heavy duty repair services",
-      "url": "./services.html",
+      "url": "/services",
       "icons": [{ "src": "images/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Request Service",
       "short_name": "Contact",
       "description": "Book a repair service or request callback",
-      "url": "./contact.html",
+      "url": "/contact",
       "icons": [{ "src": "images/icon-192.png", "sizes": "192x192" }]
     }
   ],

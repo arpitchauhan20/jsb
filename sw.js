@@ -3,7 +3,7 @@
  * Version: 1.0.0
  */
 
-const CACHE_NAME = "jsb-cache-v2";
+const CACHE_NAME = "jsb-cache-v3";
 
 const PRECACHE_ASSETS = [
   "./",

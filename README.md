@@ -10,7 +10,8 @@ Official website and Progressive Web App (PWA) for JSB Mobile Truck and Trailer 
 - `contact.html` - Contact & 24/7 callback request form
 - `terms.html` - Terms and conditions
 - `privacy.html` - Privacy policy
-- `legal.html` - Short links to terms and privacy
+- `vercel.json` - Clean URLs on Vercel (`/about` instead of `/about.html`)
+- `.htaccess` - Same clean URLs on Apache hosts
 - `manifest.json` - PWA Web App Manifest configuration
 - `sw.js` - Service Worker for offline shell caching and network fallback
 - `css/styles.css` - Custom styling, dark mode theme, and responsive layouts
