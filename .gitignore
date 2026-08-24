@@ -13,5 +13,5 @@ desktop.ini
 # Logs & Temp
 *.log
 
-# Floder
+# Ignored Folders
 google-apps-script/
