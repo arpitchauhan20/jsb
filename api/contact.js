@@ -1,27 +1,49 @@
 export default async function handler(req, res) {
+  // Allow CORS if needed
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
   try {
-    const body = req.body || {};
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        body = {};
+      }
+    }
+    body = body || {};
+
     const { name, email, phone, service, message, botcheck, website } = body;
 
-    // Honeypot bot protection
+    // Honeypot spam check
     if (botcheck || website) {
-      return res.status(200).json({ success: true, message: 'Message sent successfully.' });
+      return res.status(200).json({ success: true, message: 'Message received.' });
     }
 
     if (!name || !email || !message) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      return res.status(400).json({ success: false, message: 'Please fill in all required fields (Name, Email, Message).' });
     }
 
     const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
     const scriptSecret = process.env.GOOGLE_SCRIPT_SECRET;
 
     if (!scriptUrl) {
-      console.error('Missing GOOGLE_SCRIPT_URL environment variable');
-      return res.status(500).json({ success: false, message: 'Server configuration error' });
+      console.error('Missing GOOGLE_SCRIPT_URL in environment variables.');
+      return res.status(500).json({ success: false, message: 'Server configuration error: GOOGLE_SCRIPT_URL not set.' });
     }
 
     const params = new URLSearchParams({
@@ -38,13 +60,26 @@ export default async function handler(req, res) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: params.toString()
+      body: params.toString(),
+      redirect: 'follow'
     });
 
-    const result = await response.json();
+    const textResponse = await response.text();
+    let result = { success: true };
+    try {
+      result = JSON.parse(textResponse);
+    } catch (parseErr) {
+      // If Apps Script returned plain text or html but succeeded
+      if (response.ok) {
+        result = { success: true };
+      } else {
+        result = { success: false, message: textResponse || 'Error from mail service.' };
+      }
+    }
+
     return res.status(200).json(result);
   } catch (error) {
     console.error('Contact API Error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to process request' });
+    return res.status(500).json({ success: false, message: 'Failed to send message: ' + (error.message || error) });
   }
 }

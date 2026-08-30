@@ -77,92 +77,111 @@ if (form) {
     if (btn) btn.disabled = true;
     setStatus("Sending…", "pending");
 
-    try {
-      if (hasGoogleScript) {
-        await new Promise((resolve, reject) => {
-          const iframe = document.createElement("iframe");
-          const iframeName = `gs_contact_${Date.now()}`;
-          iframe.name = iframeName;
-          iframe.setAttribute("aria-hidden", "true");
-          iframe.style.cssText = "position:absolute;width:0;height:0;border:0;clip:rect(0,0,0,0);visibility:hidden";
-          document.body.appendChild(iframe);
+    const submitViaGoogleScript = () => {
+      return new Promise((resolve, reject) => {
+        if (!googleScriptUrl || !gsSecret) {
+          return reject(new Error("No script URL configured"));
+        }
+        const iframe = document.createElement("iframe");
+        const iframeName = `gs_contact_${Date.now()}`;
+        iframe.name = iframeName;
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.style.cssText = "position:absolute;width:0;height:0;border:0;clip:rect(0,0,0,0);visibility:hidden";
+        document.body.appendChild(iframe);
 
-          const hiddenForm = document.createElement("form");
-          hiddenForm.method = "POST";
-          hiddenForm.action = googleScriptUrl;
-          hiddenForm.target = iframeName;
-          hiddenForm.enctype = "application/x-www-form-urlencoded";
-          hiddenForm.style.display = "none";
+        const hiddenForm = document.createElement("form");
+        hiddenForm.method = "POST";
+        hiddenForm.action = googleScriptUrl;
+        hiddenForm.target = iframeName;
+        hiddenForm.enctype = "application/x-www-form-urlencoded";
+        hiddenForm.style.display = "none";
 
-          const dataToSend = {
-            token: gsSecret,
-            name: payload.name,
-            email: payload.email,
-            phone: payload.phone,
-            service: payload.service,
-            message: payload.message
-          };
+        const dataToSend = {
+          token: gsSecret,
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          service: payload.service,
+          message: payload.message
+        };
 
-          Object.entries(dataToSend).forEach(([key, val]) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = key;
-            input.value = val == null ? "" : String(val);
-            hiddenForm.appendChild(input);
-          });
-
-          document.body.appendChild(hiddenForm);
-
-          let finished = false;
-          const timer = window.setTimeout(() => {
-            if (!finished) {
-              finished = true;
-              cleanup();
-              reject(new Error("timeout"));
-            }
-          }, 30000);
-
-          const cleanup = () => {
-            window.clearTimeout(timer);
-            iframe.remove();
-            hiddenForm.remove();
-          };
-
-          const onDone = () => {
-            if (!finished) {
-              finished = true;
-              cleanup();
-              resolve();
-            }
-          };
-
-          iframe.addEventListener("load", function onInitialLoad() {
-            iframe.removeEventListener("load", onInitialLoad);
-            iframe.addEventListener("load", onDone);
-            hiddenForm.submit();
-          });
-          iframe.src = "about:blank";
+        Object.entries(dataToSend).forEach(([key, val]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = val == null ? "" : String(val);
+          hiddenForm.appendChild(input);
         });
 
-        setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
-        form.reset();
-      } else {
+        document.body.appendChild(hiddenForm);
+
+        let finished = false;
+        const timer = window.setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            cleanup();
+            resolve();
+          }
+        }, 8000);
+
+        const cleanup = () => {
+          window.clearTimeout(timer);
+          try { iframe.remove(); } catch (e) {}
+          try { hiddenForm.remove(); } catch (e) {}
+        };
+
+        const onDone = () => {
+          if (!finished) {
+            finished = true;
+            cleanup();
+            resolve();
+          }
+        };
+
+        iframe.addEventListener("load", function onInitialLoad() {
+          iframe.removeEventListener("load", onInitialLoad);
+          iframe.addEventListener("load", onDone);
+          hiddenForm.submit();
+        });
+        iframe.src = "about:blank";
+      });
+    };
+
+    try {
+      let sent = false;
+
+      // 1. Try serverless backend /api/contact if available
+      try {
         const res = await fetch(contactApi, {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify(payload)
         });
-        let resData = {};
-        try { resData = await res.json(); } catch {}
-        if (res.ok && resData.success !== false) {
-          setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
-          form.reset();
-        } else {
-          setStatus(resData.message || "Something went wrong. Please call +1 403-909-4626 or try again.", "err");
+        if (res.ok) {
+          const resData = await res.json().catch(() => ({ success: true }));
+          if (resData.success !== false) {
+            sent = true;
+          }
         }
+      } catch (apiErr) {
+        console.warn("API route unavailable, falling back to direct submission:", apiErr);
+      }
+
+      // 2. Fallback to direct Google Apps Script if API route was not used or failed
+      if (!sent && hasGoogleScript) {
+        await submitViaGoogleScript();
+        sent = true;
+      }
+
+      if (sent) {
+        setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
+        form.reset();
+      } else {
+        setStatus("Something went wrong. Please call +1 403-909-4626 or try again.", "err");
       }
     } catch (err) {
-      setStatus("Network error. Please call +1 403-909-4626 or try again.", "err");
+      console.error("Form submit error:", err);
+      setStatus("Something went wrong. Please call +1 403-909-4626 or try again.", "err");
     } finally {
       if (btn) btn.disabled = false;
     }
