@@ -56,96 +56,23 @@ if (form) {
     if (!form.reportValidity()) return;
 
     const formData = new FormData(form);
-    const botcheck = (formData.get("botcheck") || formData.get("_honey") || "").toString().trim();
-    const website = (formData.get("website") || "").toString().trim();
-    if (botcheck !== "" || website !== "") {
-      return;
-    }
-
-    if (Date.now() - formStartTime < 1200) {
+    const botcheck = (formData.get("botcheck") || "").toString().trim();
+    if (botcheck !== "") {
+      setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
+      form.reset();
       return;
     }
 
     const payload = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-      service: formData.get("service"),
-      message: formData.get("message")
+      name: (formData.get("name") || "").toString().trim(),
+      email: (formData.get("email") || "").toString().trim(),
+      phone: (formData.get("phone") || "").toString().trim(),
+      service: (formData.get("service") || "").toString().trim(),
+      message: (formData.get("message") || "").toString().trim()
     };
 
     if (btn) btn.disabled = true;
     setStatus("Sending…", "pending");
-
-    const submitViaGoogleScript = () => {
-      return new Promise((resolve, reject) => {
-        if (!googleScriptUrl || !gsSecret) {
-          return reject(new Error("No script URL configured"));
-        }
-        const iframe = document.createElement("iframe");
-        const iframeName = `gs_contact_${Date.now()}`;
-        iframe.name = iframeName;
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.style.cssText = "position:absolute;width:0;height:0;border:0;clip:rect(0,0,0,0);visibility:hidden";
-        document.body.appendChild(iframe);
-
-        const hiddenForm = document.createElement("form");
-        hiddenForm.method = "POST";
-        hiddenForm.action = googleScriptUrl;
-        hiddenForm.target = iframeName;
-        hiddenForm.enctype = "application/x-www-form-urlencoded";
-        hiddenForm.style.display = "none";
-
-        const dataToSend = {
-          token: gsSecret,
-          name: payload.name,
-          email: payload.email,
-          phone: payload.phone,
-          service: payload.service,
-          message: payload.message
-        };
-
-        Object.entries(dataToSend).forEach(([key, val]) => {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = key;
-          input.value = val == null ? "" : String(val);
-          hiddenForm.appendChild(input);
-        });
-
-        document.body.appendChild(hiddenForm);
-
-        let finished = false;
-        const timer = window.setTimeout(() => {
-          if (!finished) {
-            finished = true;
-            cleanup();
-            resolve();
-          }
-        }, 8000);
-
-        const cleanup = () => {
-          window.clearTimeout(timer);
-          try { iframe.remove(); } catch (e) {}
-          try { hiddenForm.remove(); } catch (e) {}
-        };
-
-        const onDone = () => {
-          if (!finished) {
-            finished = true;
-            cleanup();
-            resolve();
-          }
-        };
-
-        iframe.addEventListener("load", function onInitialLoad() {
-          iframe.removeEventListener("load", onInitialLoad);
-          iframe.addEventListener("load", onDone);
-          hiddenForm.submit();
-        });
-        iframe.src = "about:blank";
-      });
-    };
 
     try {
       let sent = false;
@@ -164,12 +91,29 @@ if (form) {
           }
         }
       } catch (apiErr) {
-        console.warn("API route unavailable, falling back to direct submission:", apiErr);
+        console.warn("API endpoint unavailable, attempting direct delivery:", apiErr);
       }
 
-      // 2. Fallback to direct Google Apps Script if API route was not used or failed
-      if (!sent && hasGoogleScript) {
-        await submitViaGoogleScript();
+      // 2. Direct delivery to Google Apps Script if API route was not used or failed
+      if (!sent && googleScriptUrl) {
+        const dataToSend = {
+          token: gsSecret,
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          service: payload.service,
+          message: payload.message
+        };
+
+        const formParams = new URLSearchParams(dataToSend);
+        await fetch(googleScriptUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formParams.toString()
+        });
         sent = true;
       }
 
@@ -180,7 +124,7 @@ if (form) {
         setStatus("Something went wrong. Please call +1 403-909-4626 or try again.", "err");
       }
     } catch (err) {
-      console.error("Form submit error:", err);
+      console.error("Form submission error:", err);
       setStatus("Something went wrong. Please call +1 403-909-4626 or try again.", "err");
     } finally {
       if (btn) btn.disabled = false;
