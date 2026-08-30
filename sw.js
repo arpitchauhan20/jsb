@@ -17,7 +17,7 @@ const PRECACHE_ASSETS = [
   "./css/styles.css",
   "./js/main.js",
   "./manifest.json",
-  "./images/jsb-logo.png",
+  "./images/jsb-logo.webp",
   "./images/icon-192.png",
   "./images/icon-512.png",
   "./images/icon-maskable-512.png",
