@@ -159,6 +159,10 @@ header.site .wrap {
   display: none !important;
 }
 
+.go372176402 .tm-title {
+  display: none !important;
+}
+
 .brand img {
   height: clamp(64px, 7.5vw, 88px);
   width: auto;
