@@ -69,12 +69,16 @@ export default async function handler(req, res) {
     try {
       result = JSON.parse(textResponse);
     } catch (parseErr) {
-      // If Apps Script returned plain text or html but succeeded
       if (response.ok) {
         result = { success: true };
       } else {
         result = { success: false, message: textResponse || 'Error from mail service.' };
       }
+    }
+
+    if (result && result.success === false) {
+      console.error('Google Script returned error:', result);
+      return res.status(400).json(result);
     }
 
     return res.status(200).json(result);

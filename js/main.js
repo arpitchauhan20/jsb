@@ -77,6 +77,8 @@ if (form) {
     try {
       let sent = false;
 
+      let errorMessage = "";
+
       // 1. Try serverless backend /api/contact if available
       try {
         const res = await fetch(contactApi, {
@@ -85,10 +87,13 @@ if (form) {
           body: JSON.stringify(payload)
         });
         const contentType = res.headers.get("content-type") || "";
-        if (res.ok && contentType.includes("application/json")) {
+        if (contentType.includes("application/json")) {
           const resData = await res.json();
-          if (resData && resData.success === true) {
+          if (res.ok && resData && resData.success === true) {
             sent = true;
+          } else if (resData && resData.message) {
+            errorMessage = resData.message;
+            console.error("API response error:", resData.message);
           }
         }
       } catch (apiErr) {
@@ -132,7 +137,7 @@ if (form) {
         setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
         form.reset();
       } else {
-        setStatus("Something went wrong. Please call +1 403-909-4626 or try again.", "err");
+        setStatus(errorMessage ? `Error: ${errorMessage}. Please call +1 403-909-4626 or try again.` : "Something went wrong. Please call +1 403-909-4626 or try again.", "err");
       }
     } catch (err) {
       console.error("Form submission error:", err);
