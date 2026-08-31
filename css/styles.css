@@ -155,13 +155,16 @@ header.site .wrap {
   letter-spacing: 0.02em;
 }
 
-.go4269172405 {
+/* Hide Trustmary widget title ("Here is what our customers say") */
+[data-tm-edit="widget-layout"],
+.tm-widget > .tm-title,
+.tm-widget .tm-title:not(.tm-info .tm-title),
+[class*="tm-widget"] > .tm-title,
+[class*="tm-widget"] > [class*="title"],
+[data-trustmary-widget] .tm-title:not(.tm-info .tm-title) {
   display: none !important;
 }
 
-.go372176402 .tm-title {
-  display: none !important;
-}
 
 .brand img {
   height: clamp(64px, 7.5vw, 88px);
