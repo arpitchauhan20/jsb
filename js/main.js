@@ -56,8 +56,8 @@ if (form) {
     if (!form.reportValidity()) return;
 
     const formData = new FormData(form);
-    const botcheck = (formData.get("botcheck") || "").toString().trim();
-    if (botcheck !== "") {
+    const hpCheck = (formData.get("_hp_check") || "").toString().trim();
+    if (hpCheck !== "") {
       setStatus("Thank you! Your message was sent. We will reply soon.", "ok");
       form.reset();
       return;
@@ -106,16 +106,26 @@ if (form) {
           message: payload.message
         };
 
-        const formParams = new URLSearchParams(dataToSend);
-        await fetch(googleScriptUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: formParams.toString()
-        });
-        sent = true;
+        try {
+          await fetch(googleScriptUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(dataToSend)
+          });
+          sent = true;
+        } catch (scriptErr) {
+          console.warn("JSON fetch failed, attempting URLSearchParams fallback:", scriptErr);
+          const formParams = new URLSearchParams(dataToSend);
+          await fetch(googleScriptUrl, {
+            method: "POST",
+            mode: "no-cors",
+            body: formParams
+          });
+          sent = true;
+        }
       }
 
       if (sent) {

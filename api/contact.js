@@ -27,10 +27,10 @@ export default async function handler(req, res) {
     }
     body = body || {};
 
-    const { name, email, phone, service, message, botcheck, website } = body;
+    const { name, email, phone, service, message, _hp_check } = body;
 
     // Honeypot spam check
-    if (botcheck || website) {
+    if (_hp_check) {
       return res.status(200).json({ success: true, message: 'Message received.' });
     }
 
