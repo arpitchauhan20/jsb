@@ -156,7 +156,7 @@ header.site .wrap {
 }
 
 .go4269172405 {
-  display: none;
+  display: none !important;
 }
 
 .brand img {
