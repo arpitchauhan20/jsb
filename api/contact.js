@@ -38,13 +38,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields (Name, Email, Message).' });
     }
 
-    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
-    const scriptSecret = process.env.GOOGLE_SCRIPT_SECRET;
-
-    if (!scriptUrl) {
-      console.error('Missing GOOGLE_SCRIPT_URL in environment variables.');
-      return res.status(500).json({ success: false, message: 'Server configuration error: GOOGLE_SCRIPT_URL not set.' });
-    }
+    const scriptUrl = process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwFD624jdVyVK_hrOAB3Ujlshc0Txy583P1e-H61kral2D8SQ0wL5-2wXYvlUoB7Efhlw/exec';
+    const scriptSecret = process.env.GOOGLE_SCRIPT_SECRET || 'vN0leiJCcXjqr0erK842T0iVXpBTZgPf9ivDVy6il8o';
 
     const params = new URLSearchParams({
       token: scriptSecret || '',

@@ -84,9 +84,10 @@ if (form) {
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify(payload)
         });
-        if (res.ok) {
-          const resData = await res.json().catch(() => ({ success: true }));
-          if (resData.success !== false) {
+        const contentType = res.headers.get("content-type") || "";
+        if (res.ok && contentType.includes("application/json")) {
+          const resData = await res.json();
+          if (resData && resData.success === true) {
             sent = true;
           }
         }
